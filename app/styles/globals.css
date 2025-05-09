@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Base colors */
+  --color-base-bg-main: rgb(14 14 19);
+  --color-base-bg-alt: rgb(255 250 234);
+  --color-base-border: rgb(63 63 70);
+  
+  /* Brand colors */
+  --color-brand-primary: rgb(98 246 181);
+  --color-brand-primary-hover: rgb(130 248 196);
+  --color-brand-blue: rgb(77 202 250);
+  --color-brand-green: rgb(187 245 41);
+  --color-brand-orange: rgb(233 107 52);
+  --color-brand-pink: rgb(222 148 226);
+  --color-brand-purple: rgb(153 119 255);
+  --color-brand-yellow: rgb(255 221 3);
+  
+  /* Text colors */
+  --color-text-primary: rgb(255 250 234);
+  --color-text-secondary: rgb(113 113 122);
+  
+  /* Font families */
+  --font-family-sans: var(--font-sans);
+  --font-family-mono: "Geist Mono", var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  /* Font sizes */
+  --font-size-xs: 0.875rem;
+  --font-size-sm: 0.9375rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.375rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+  --font-size-4xl: 4rem;
+  
+  /* Font weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-heavy: 900;
+  
+  /* Line heights */
+  --line-height-tight: 1;
+  --line-height-normal: 1.2;
+  --line-height-relaxed: 1.4;
+  
+  /* Letter spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.07rem;
+  
+  /* Background and foreground */
+  --background: var(--color-base-bg-main);
+  --foreground: var(--color-text-primary);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+} 
