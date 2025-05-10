@@ -6,7 +6,7 @@ interface UseRecordingReturn {
   audioChunks: Blob[];
   error: string | null;
   startRecording: () => Promise<void>;
-  stopRecording: () => void;
+  stopRecording: () => Promise<void>;
   resetRecording: () => void;
 }
 
@@ -68,20 +68,25 @@ export const useRecording = (maxDuration: number = 10): UseRecordingReturn => {
   };
 
   const stopRecording = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-      
-      if (mediaRecorderRef.current.stream) {
-        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    return new Promise<void>((resolve) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
-    }
-    
-    setIsRecording(false);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.onstop = () => {
+          if (mediaRecorderRef.current?.stream) {
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+          }
+          setIsRecording(false);
+          resolve();
+        };
+        mediaRecorderRef.current.stop();
+      } else {
+        setIsRecording(false);
+        resolve();
+      }
+    });
   };
 
   return {

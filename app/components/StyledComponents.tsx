@@ -13,9 +13,12 @@ export const BackgroundContainer = styled.div`
   width: 100%;
   min-height: 100vh;
   border: 1px solid var(--color-base-border);
-  background-image: repeating-linear-gradient(to bottom, transparent, transparent 48px, rgba(63, 63, 70, 0.3) 48px, rgba(63, 63, 70, 0.3) 49px), 
-                   repeating-linear-gradient(to right, transparent, transparent 48px, rgba(63, 63, 70, 0.3) 48px, rgba(63, 63, 70, 0.3) 49px);
-  background-color: var(--color-base-bg-main);
+  background:
+    linear-gradient(135deg, #fff8f6 0%, #f7c6d9 100%);
+  /* Optionally, add a faint floral SVG as a background-image for extra elegance */
+  /* background-image: url('/floral.svg'), linear-gradient(135deg, #fff8f6 0%, #f7c6d9 100%); */
+  background-repeat: no-repeat;
+  background-size: cover;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -44,8 +47,9 @@ export const SlideContainer = styled(motion.div)`
   margin: 2rem auto;
   padding: 2.5rem;
   border: 1px solid var(--color-base-border);
-  border-radius: 0.2rem;
-  background-color: var(--color-base-bg-main);
+  border-radius: 1rem;
+  background-color: var(--color-base-bg-alt);
+  box-shadow: 0 4px 24px 0 rgba(233, 183, 195, 0.08);
   position: relative;
   height: 500px;
   backdrop-filter: blur(10px);
@@ -86,12 +90,13 @@ export const NavigationButton = styled.button`
   text-transform: uppercase;
   border: 1px solid transparent;
   border-radius: 9999px;
-  background-color: var(--color-brand-purple);
-  color: var(--color-base-bg-main);
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-primary);
+  box-shadow: 0 2px 8px 0 rgba(233, 183, 195, 0.10);
   transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 
   &:hover:not(:disabled) {
-    background-color: transparent;
+    background-color: var(--color-brand-primary-hover);
     border-color: var(--color-brand-purple);
     color: var(--color-brand-purple);
   }
@@ -136,9 +141,9 @@ export const ShareButton = styled.button`
   font-family: var(--font-family-mono);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
-  color: var(--color-base-bg-main);
-  background: var(--color-brand-primary);
-  border: 1px solid var(--color-brand-primary);
+  color: var(--color-text-primary);
+  background: var(--color-brand-yellow);
+  border: 1px solid var(--color-brand-yellow);
   border-radius: 9999px;
   cursor: pointer;
   display: flex;
@@ -155,9 +160,9 @@ export const ShareButton = styled.button`
   letter-spacing: var(--letter-spacing-wide);
 
   &:hover {
-    color: var(--color-text-primary);
-    background: var(--color-base-bg-main);
-    border-color: var(--color-base-border);
+    color: var(--color-brand-yellow);
+    background: var(--color-base-bg-alt);
+    border-color: var(--color-brand-yellow);
   }
 
   svg {

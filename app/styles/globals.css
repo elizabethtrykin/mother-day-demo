@@ -4,23 +4,23 @@
 
 :root {
   /* Base colors */
-  --color-base-bg-main: rgb(14 14 19);
-  --color-base-bg-alt: rgb(255 250 234);
-  --color-base-border: rgb(63 63 70);
+  --color-base-bg-main: #fff8f6; /* soft blush/cream */
+  --color-base-bg-alt: #fdf6f0; /* lighter cream */
+  --color-base-border: #e8d9ce; /* soft beige border */
   
   /* Brand colors */
-  --color-brand-primary: rgb(98 246 181);
-  --color-brand-primary-hover: rgb(130 248 196);
-  --color-brand-blue: rgb(77 202 250);
-  --color-brand-green: rgb(187 245 41);
-  --color-brand-orange: rgb(233 107 52);
-  --color-brand-pink: rgb(222 148 226);
-  --color-brand-purple: rgb(153 119 255);
-  --color-brand-yellow: rgb(255 221 3);
+  --color-brand-primary: #e9b7c3; /* blush pink */
+  --color-brand-primary-hover: #d89bab; /* darker blush for clear hover */
+  --color-brand-blue: #b9b8f3; /* muted lavender */
+  --color-brand-green: #e6eecf; /* soft sage */
+  --color-brand-orange: #f7d7b4; /* peachy accent */
+  --color-brand-pink: #f7c6d9; /* light pink */
+  --color-brand-purple: #cbb7e9; /* muted lavender */
+  --color-brand-yellow: #f9e5b2; /* subtle gold */
   
   /* Text colors */
-  --color-text-primary: rgb(255 250 234);
-  --color-text-secondary: rgb(113 113 122);
+  --color-text-primary: #7a4e4e; /* deep rose brown for text */
+  --color-text-secondary: #bfa6a0; /* muted taupe */
   
   /* Font families */
   --font-family-sans: var(--font-sans);
