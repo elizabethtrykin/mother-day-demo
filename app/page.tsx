@@ -133,7 +133,7 @@ const TranscriptTextarea = styled.textarea`
 export default function Home() {
   const [status, setStatus] = useState<RecorderStatus>('idle');
   const [result, setResult] = useState<'success' | 'error' | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [customer, setCustomer] = useState('');
   const [message, setMessage] = useState('');
   const [voiceId, setVoiceId] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -202,8 +202,15 @@ export default function Home() {
     try {
       setIsSending(true);
       setError(null);
-      if (!phoneNumber || !message || !voiceId) {
+      if (!customer || !message || !voiceId || !name) {
         throw new Error('Please fill in all fields');
+      }
+      // Validate phone number format before sending
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      if (!phoneRegex.test(customer)) {
+        setIsSending(false);
+        setError('Please enter a valid phone number in E.164 format (e.g., +14155552671) including the country code.');
+        return;
       }
       const response = await fetch('/api/vapi/schedule-call', {
         method: 'POST',
@@ -212,19 +219,22 @@ export default function Home() {
           cartesiaVoiceId: voiceId,
           name: name,
           firstMessage: message,
-          phoneNumber: phoneNumber
+          customer
         }),
       });
+      
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        throw new Error(data.error || 'Failed to send message');
       }
+      
       setStatus('idle');
       setResult(null);
-      setPhoneNumber('');
+      setCustomer('');
       setMessage('');
       setVoiceId('');
       setName('');
-      alert('Message sent!');
+      alert('Message sent! The call will be made shortly.');
     } catch (err: any) {
       setError(err.message || 'Failed to send message');
     } finally {
@@ -237,7 +247,7 @@ export default function Home() {
       <BackgroundContainer>
         <StyledTitle>Mother's Day Voice Agent</StyledTitle>
         <StyledSubtitle>Record your voice, clone it, write a message, and we'll call your mom and deliver it in a natural conversation.</StyledSubtitle>
-        {error && <div className="text-red-500 mb-4">{error}</div>}
+        {error && <div className="text-red-500 mb-4" style={{background:'#fff0f3',border:'1.5px solid #e9b7c3',borderRadius:'0.75rem',padding:'1rem',fontWeight:500}}>{error}</div>}
         <div className="space-y-4">
           <VoiceRecording
             status={status}
@@ -272,15 +282,20 @@ export default function Home() {
                 />
               </div>
               <div>
-                <StyledLabel htmlFor="phone">Mom's phone number (with country code)</StyledLabel>
+                <StyledLabel htmlFor="customer">Mom's phone number (with country code)</StyledLabel>
                 <StyledInput
-                  id="phone"
+                  id="customer"
                   type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+1234567890"
+                  value={customer}
+                  onChange={(e) => setCustomer(e.target.value)}
+                  placeholder="+1XXXXXXXXXX"
                   autoComplete="tel"
+                  pattern="^\+[1-9]\d{1,14}$"
+                  title="Please enter a valid phone number with country code (e.g., +1XXXXXXXXXX)"
                 />
+                <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
+                  Must include country code (e.g., +1 for US)
+                </div>
               </div>
               <div>
                 <StyledLabel htmlFor="message">Your message. We'll read this first, and then chat with your mom. </StyledLabel>
