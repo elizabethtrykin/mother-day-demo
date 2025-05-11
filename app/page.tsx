@@ -205,10 +205,15 @@ export default function Home() {
       if (!phoneNumber || !message || !voiceId) {
         throw new Error('Please fill in all fields');
       }
-      const response = await fetch('/api/assistant/create-with-phone', {
+      const response = await fetch('/api/vapi/schedule-call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ voiceId, phoneNumber, message }),
+        body: JSON.stringify({ 
+          cartesiaVoiceId: voiceId,
+          name: name,
+          firstMessage: message,
+          phoneNumber: phoneNumber
+        }),
       });
       if (!response.ok) {
         throw new Error('Failed to send message');
