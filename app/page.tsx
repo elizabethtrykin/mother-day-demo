@@ -139,6 +139,13 @@ export default function Home() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [question1, setQuestion1] = useState('');
+  const [question2, setQuestion2] = useState('');
+  const [question3, setQuestion3] = useState('');
+  const [poem, setPoem] = useState('');
+  const [isGeneratingPoem, setIsGeneratingPoem] = useState(false);
+  const [isMakingCall, setIsMakingCall] = useState(false);
+  const [poemGenerated, setPoemGenerated] = useState(false);
 
   const {
     isRecording,
@@ -198,47 +205,74 @@ export default function Home() {
     resetRecording();
   };
 
-  const handleSendMessage = async () => {
+  const handleSubmit = async () => {
     try {
-      setIsSending(true);
+      setIsGeneratingPoem(true);
+      setIsMakingCall(false);
       setError(null);
-      if (!customer || !message || !voiceId || !name) {
+      setPoem('');
+      setPoemGenerated(false);
+      if (!customer || !voiceId || !name || !question1 || !question2 || !question3) {
         throw new Error('Please fill in all fields');
       }
-      // Validate phone number format before sending
       const phoneRegex = /^\+[1-9]\d{1,14}$/;
       if (!phoneRegex.test(customer)) {
-        setIsSending(false);
+        setIsGeneratingPoem(false);
         setError('Please enter a valid phone number in E.164 format (e.g., +14155552671) including the country code.');
         return;
       }
-      const response = await fetch('/api/vapi/schedule-call', {
+      // Generate poem
+      const poemRes = await fetch('/api/generate-poem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
+          question1,
+          question2,
+          question3,
+          name
+        }),
+      });
+      const poemData = await poemRes.json();
+      if (!poemRes.ok) {
+        throw new Error(poemData.error || 'Failed to generate poem');
+      }
+      setPoem(poemData.poem);
+      setPoemGenerated(true);
+      setIsGeneratingPoem(false);
+      // Wait 2 seconds to let user read the poem
+      await new Promise(res => setTimeout(res, 2000));
+      // Make the call
+      setIsMakingCall(true);
+      const callRes = await fetch('/api/vapi/schedule-call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           cartesiaVoiceId: voiceId,
           name: name,
-          firstMessage: message,
+          firstMessage: poemData.poem,
           customer
         }),
       });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send message');
+      const callData = await callRes.json();
+      if (!callRes.ok) {
+        throw new Error(callData.error || 'Failed to send message');
       }
-      
       setStatus('idle');
       setResult(null);
       setCustomer('');
-      setMessage('');
       setVoiceId('');
       setName('');
+      setQuestion1('');
+      setQuestion2('');
+      setQuestion3('');
+      setPoem('');
+      setPoemGenerated(false);
+      setIsMakingCall(false);
       alert('Message sent! The call will be made shortly.');
     } catch (err: any) {
       setError(err.message || 'Failed to send message');
-    } finally {
-      setIsSending(false);
+      setIsGeneratingPoem(false);
+      setIsMakingCall(false);
     }
   };
 
@@ -298,20 +332,42 @@ export default function Home() {
                 </div>
               </div>
               <div>
-                <StyledLabel htmlFor="message">Your message. We'll read this first, and then chat with your mom. </StyledLabel>
+                <StyledLabel>What's one beautiful thing your mom does?</StyledLabel>
                 <StyledTextarea
-                  id="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Write your message here..."
+                  value={question1}
+                  onChange={(e) => setQuestion1(e.target.value)}
+                  placeholder="A subtle, heartfelt action..."
+                />
+              </div>
+              <div>
+                <StyledLabel>What is your favrourite memory with your mom?</StyledLabel>
+                <StyledTextarea
+                  value={question2}
+                  onChange={(e) => setQuestion2(e.target.value)}
+                  placeholder="Share a special memory..."
+                />
+              </div>
+              <div>
+                <StyledLabel>What feeling do you associate most strongly with your mom?</StyledLabel>
+                <StyledTextarea
+                  value={question3}
+                  onChange={(e) => setQuestion3(e.target.value)}
+                  placeholder="A single emotion or feeling..."
                 />
               </div>
               <StyledButton
-                onClick={handleSendMessage}
-                disabled={isSending}
+                onClick={handleSubmit}
+                disabled={isGeneratingPoem || isMakingCall}
+                style={{ marginTop: '1.5rem' }}
               >
-                {isSending ? 'Sending...' : 'Send Message'}
+                {(isGeneratingPoem && !poemGenerated) ? 'Generating Poem...' : (isMakingCall ? 'Calling...' : 'Submit')}
               </StyledButton>
+              {poem && poemGenerated && (
+                <div style={{ marginTop: '1.5rem', background: '#f9f9fa', border: '1.5px solid #e9b7c3', borderRadius: '1rem', padding: '1.5rem' }}>
+                  <div style={{ fontWeight: 600, marginBottom: '0.7rem' }}>Generated Poem:</div>
+                  <div style={{ whiteSpace: 'pre-line', fontFamily: 'serif', fontSize: '1.1rem' }}>{poem}</div>
+                </div>
+              )}
             </FormContainer>
           )}
         </div>
