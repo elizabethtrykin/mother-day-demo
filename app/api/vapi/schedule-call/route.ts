@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       },
       firstMessage,
       variableValues: {
-        name,
+        name: name,
       }
     } as any;
 

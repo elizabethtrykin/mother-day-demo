@@ -58,7 +58,7 @@ const StyledTextarea = styled.textarea`
   font-size: 1.13rem;
   font-family: 'Inter', 'Geist', 'system-ui', 'sans-serif';
   outline: none;
-  min-height: 8.5rem;
+  min-height: 4.5rem;
   resize: vertical;
   transition: border 0.2s;
   margin-bottom: 0.1rem;
@@ -146,6 +146,7 @@ export default function Home() {
   const [isGeneratingPoem, setIsGeneratingPoem] = useState(false);
   const [isMakingCall, setIsMakingCall] = useState(false);
   const [poemGenerated, setPoemGenerated] = useState(false);
+  const [step, setStep] = useState(1);
 
   const {
     isRecording,
@@ -205,51 +206,61 @@ export default function Home() {
     resetRecording();
   };
 
-  const handleSubmit = async () => {
+  const handleGeneratePoem = async () => {
     try {
       setIsGeneratingPoem(true);
-      setIsMakingCall(false);
       setError(null);
       setPoem('');
-      setPoemGenerated(false);
-      if (!customer || !voiceId || !name || !question1 || !question2 || !question3) {
-        throw new Error('Please fill in all fields');
+      if (!question1 || !question2 || !question3) {
+        throw new Error('Please answer all questions');
       }
-      const phoneRegex = /^\+[1-9]\d{1,14}$/;
-      if (!phoneRegex.test(customer)) {
-        setIsGeneratingPoem(false);
-        setError('Please enter a valid phone number in E.164 format (e.g., +14155552671) including the country code.');
-        return;
-      }
-      // Generate poem
-      const poemRes = await fetch('/api/generate-poem', {
+      const response = await fetch('/api/generate-poem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question1,
           question2,
           question3,
-          name
+          name: name || 'Your child',
         }),
       });
-      const poemData = await poemRes.json();
-      if (!poemRes.ok) {
-        throw new Error(poemData.error || 'Failed to generate poem');
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate poem');
       }
-      setPoem(poemData.poem);
-      setPoemGenerated(true);
+      setPoem(data.poem);
+      setStep(2);
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate poem');
+    } finally {
       setIsGeneratingPoem(false);
-      // Wait 2 seconds to let user read the poem
-      await new Promise(res => setTimeout(res, 2000));
-      // Make the call
+    }
+  };
+
+  const handleContinue = () => {
+    setStep(3);
+  };
+
+  const handlePlaceCall = async () => {
+    try {
       setIsMakingCall(true);
+      setError(null);
+      if (!customer || !voiceId || !name || !poem) {
+        throw new Error('Please fill in all fields');
+      }
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      if (!phoneRegex.test(customer)) {
+        setIsMakingCall(false);
+        setError('Please enter a valid phone number in E.164 format (e.g., +14155552671) including the country code.');
+        return;
+      }
       const callRes = await fetch('/api/vapi/schedule-call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           cartesiaVoiceId: voiceId,
           name: name,
-          firstMessage: poemData.poem,
+          firstMessage: `Hey Mom, this is ${name}. Happy Mother's Day! I love you so much and wrote this poem for you.\n\n${poem}\n\nHow is your day going so far?`,
           customer
         }),
       });
@@ -266,12 +277,11 @@ export default function Home() {
       setQuestion2('');
       setQuestion3('');
       setPoem('');
-      setPoemGenerated(false);
+      setStep(1);
       setIsMakingCall(false);
       alert('Message sent! The call will be made shortly.');
     } catch (err: any) {
       setError(err.message || 'Failed to send message');
-      setIsGeneratingPoem(false);
       setIsMakingCall(false);
     }
   };
@@ -280,7 +290,7 @@ export default function Home() {
     <MainContainer>
       <BackgroundContainer>
         <StyledTitle>Mother's Day Voice Agent</StyledTitle>
-        <StyledSubtitle>Record your voice, clone it, write a message, and we'll call your mom and deliver it in a natural conversation.</StyledSubtitle>
+        <StyledSubtitle>Record your voice, clone it, answer a few questions. We'll write a poem, call your mom and deliver it in a natural conversation.</StyledSubtitle>
         {error && <div className="text-red-500 mb-4" style={{background:'#fff0f3',border:'1.5px solid #e9b7c3',borderRadius:'0.75rem',padding:'1rem',fontWeight:500}}>{error}</div>}
         <div className="space-y-4">
           <VoiceRecording
@@ -296,77 +306,102 @@ export default function Home() {
               <label htmlFor="transcript" style={{ fontWeight: 500, marginBottom: 8, display: 'block' }}>Talk for at least 10 seconds. You can read this transcript.</label>
               <TranscriptTextarea
                 id="transcript"
-                value={`Hey Mom — remember that time I tried to make you breakfast in bed and nearly set the toaster on fire? Yeah… I've come a long way since then. But honestly, that moment kind of sums up how much I've always wanted to do something special for you — even if I had no idea what I was doing. You've always shown up for me with so much love and patience, even when I was a total mess. So this year, I figured I'd try something a little different… and let AI say what my heart's been trying to for years: I love you. Happy Mother's Day.`}
+                value={`Today is Mother's Day, and even though I'm sending a message to my mom with a voice agent, I should still make sure I call her, laugh with her, and hopefully send her some flowers. My mom deserves it because she's the best and I love her a lot.`}
                 readOnly
               />
             </TranscriptContainer>
           )}
-          {/* Only show the phone/message form after a successful voice clone */}
           {status === 'result' && result === 'success' && (
             <FormContainer>
-              <div>
-                <StyledLabel htmlFor="name">Your name</StyledLabel>
-                <StyledInput
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
-                  autoComplete="name"
-                />
-              </div>
-              <div>
-                <StyledLabel htmlFor="customer">Mom's phone number (with country code)</StyledLabel>
-                <StyledInput
-                  id="customer"
-                  type="tel"
-                  value={customer}
-                  onChange={(e) => setCustomer(e.target.value)}
-                  placeholder="+1XXXXXXXXXX"
-                  autoComplete="tel"
-                  pattern="^\+[1-9]\d{1,14}$"
-                  title="Please enter a valid phone number with country code (e.g., +1XXXXXXXXXX)"
-                />
-                <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
-                  Must include country code (e.g., +1 for US)
-                </div>
-              </div>
-              <div>
-                <StyledLabel>What's one beautiful thing your mom does?</StyledLabel>
-                <StyledTextarea
-                  value={question1}
-                  onChange={(e) => setQuestion1(e.target.value)}
-                  placeholder="A subtle, heartfelt action..."
-                />
-              </div>
-              <div>
-                <StyledLabel>What is your favrourite memory with your mom?</StyledLabel>
-                <StyledTextarea
-                  value={question2}
-                  onChange={(e) => setQuestion2(e.target.value)}
-                  placeholder="Share a special memory..."
-                />
-              </div>
-              <div>
-                <StyledLabel>What feeling do you associate most strongly with your mom?</StyledLabel>
-                <StyledTextarea
-                  value={question3}
-                  onChange={(e) => setQuestion3(e.target.value)}
-                  placeholder="A single emotion or feeling..."
-                />
-              </div>
-              <StyledButton
-                onClick={handleSubmit}
-                disabled={isGeneratingPoem || isMakingCall}
-                style={{ marginTop: '1.5rem' }}
-              >
-                {(isGeneratingPoem && !poemGenerated) ? 'Generating Poem...' : (isMakingCall ? 'Calling...' : 'Submit')}
-              </StyledButton>
-              {poem && poemGenerated && (
-                <div style={{ marginTop: '1.5rem', background: '#f9f9fa', border: '1.5px solid #e9b7c3', borderRadius: '1rem', padding: '1.5rem' }}>
-                  <div style={{ fontWeight: 600, marginBottom: '0.7rem' }}>Generated Poem:</div>
-                  <div style={{ whiteSpace: 'pre-line', fontFamily: 'serif', fontSize: '1.1rem' }}>{poem}</div>
-                </div>
+              {step === 1 && (
+                <>
+                  <div>
+                    <StyledLabel>What's one beautiful thing your mom does?</StyledLabel>
+                    <StyledTextarea
+                      value={question1}
+                      onChange={(e) => setQuestion1(e.target.value)}
+                      placeholder="Tells you how amazing you are everytime you call..."
+                      style={{ marginBottom: '0.5rem' }}
+                    />
+                  </div>
+                  <div>
+                    <StyledLabel>What is your favrourite memory with your mom?</StyledLabel>
+                    <StyledTextarea
+                      value={question2}
+                      onChange={(e) => setQuestion2(e.target.value)}
+                      placeholder="Making you an amazing dinner whenever you visit..."
+                      style={{ marginBottom: '0.5rem' }}
+                    />
+                  </div>
+                  <div>
+                    <StyledLabel>What feeling do you associate most strongly with your mom?</StyledLabel>
+                    <StyledTextarea
+                      value={question3}
+                      onChange={(e) => setQuestion3(e.target.value)}
+                      placeholder="Warmth, love, incredible care and grounding..."
+                      style={{ marginBottom: '0.5rem' }}
+                    />
+                  </div>
+                  <StyledButton
+                    onClick={handleGeneratePoem}
+                    disabled={isGeneratingPoem}
+                    style={{ marginTop: '0.5rem' }}
+                  >
+                    {isGeneratingPoem ? 'Generating Poem...' : 'Generate Poem'}
+                  </StyledButton>
+                </>
+              )}
+              {step === 2 && (
+                <>
+                  <div style={{ marginTop: '1.5rem', background: '#f9f9fa', border: '1.5px solid #e9b7c3', borderRadius: '1rem', padding: '1.5rem' }}>
+                    <div style={{ fontWeight: 600, marginBottom: '0.7rem' }}>Generated Poem:</div>
+                    <div style={{ whiteSpace: 'pre-line', fontFamily: 'serif', fontSize: '1.1rem' }}>{poem}</div>
+                  </div>
+                  <StyledButton
+                    onClick={handleContinue}
+                    style={{ marginTop: '1.5rem' }}
+                  >
+                    Continue
+                  </StyledButton>
+                </>
+              )}
+              {step === 3 && (
+                <>
+                  <div>
+                    <StyledLabel htmlFor="name">Your first name</StyledLabel>
+                    <StyledInput
+                      id="name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Enter your first name"
+                      autoComplete="name"
+                    />
+                  </div>
+                  <div>
+                    <StyledLabel htmlFor="customer">Mom's phone number (with country code)</StyledLabel>
+                    <StyledInput
+                      id="customer"
+                      type="tel"
+                      value={customer}
+                      onChange={(e) => setCustomer(e.target.value)}
+                      placeholder="+1XXXXXXXXXX"
+                      autoComplete="tel"
+                      pattern="^\+[1-9]\d{1,14}$"
+                      title="Please enter a valid phone number with country code (e.g., +1XXXXXXXXXX)"
+                    />
+                    <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
+                      Must include country code (e.g., +1 for US)
+                    </div>
+                  </div>
+                  <StyledButton
+                    onClick={handlePlaceCall}
+                    disabled={isMakingCall}
+                    style={{ marginTop: '0.5rem' }}
+                  >
+                    {isMakingCall ? 'Calling...' : 'Place Call'}
+                  </StyledButton>
+                </>
               )}
             </FormContainer>
           )}

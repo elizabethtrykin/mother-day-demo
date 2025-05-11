@@ -73,15 +73,24 @@ export const useRecording = (maxDuration: number = 10): UseRecordingReturn => {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.onstop = () => {
-          if (mediaRecorderRef.current?.stream) {
-            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-          }
+      if (mediaRecorderRef.current) {
+        if (mediaRecorderRef.current.stream) {
+          mediaRecorderRef.current.stream.getTracks().forEach(track => {
+            if (track.readyState === 'live') track.stop();
+          });
+        }
+        if (mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.onstop = () => {
+            setIsRecording(false);
+            mediaRecorderRef.current = null;
+            resolve();
+          };
+          mediaRecorderRef.current.stop();
+        } else {
           setIsRecording(false);
+          mediaRecorderRef.current = null;
           resolve();
-        };
-        mediaRecorderRef.current.stop();
+        }
       } else {
         setIsRecording(false);
         resolve();
