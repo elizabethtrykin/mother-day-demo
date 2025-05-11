@@ -9,7 +9,6 @@ import styled from 'styled-components';
 
 const FormContainer = styled.div`
   width: 34rem;
-  min-width: 34rem;
   max-width: 34rem;
   margin: 0 auto;
   background: #fff;
@@ -19,6 +18,19 @@ const FormContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2.2rem;
+  box-sizing: border-box;
+  @media (max-width: 600px) {
+    width: 100%;
+    max-width: 100vw;
+    min-width: 0;
+    margin: 0;
+    padding: 1rem 0.5rem 1.5rem 0.5rem;
+    border-radius: 0.5rem;
+    box-shadow: none;
+    gap: 0.8rem;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
 `;
 
 const StyledLabel = styled.label`
@@ -42,9 +54,15 @@ const StyledInput = styled.input`
   outline: none;
   transition: border 0.2s;
   margin-bottom: 0.1rem;
+  box-sizing: border-box;
   &:focus {
     border-color: #e9b7c3;
     background: #fff;
+  }
+  @media (max-width: 600px) {
+    font-size: 1rem;
+    padding: 0.7rem 0.7rem;
+    min-height: 2.2rem;
   }
 `;
 
@@ -61,10 +79,15 @@ const StyledTextarea = styled.textarea`
   min-height: 4.5rem;
   resize: vertical;
   transition: border 0.2s;
-  margin-bottom: 0.1rem;
+  box-sizing: border-box;
   &:focus {
     border-color: #e9b7c3;
     background: #fff;
+  }
+  @media (max-width: 600px) {
+    font-size: 1rem;
+    padding: 0.7rem 0.7rem;
+    min-height: 2.2rem;
   }
 `;
 
@@ -82,6 +105,7 @@ const StyledButton = styled.button`
   cursor: pointer;
   transition: background 0.18s, color 0.18s;
   margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   &:hover:not(:disabled) {
     background: #f5c1d1;
     color: #23221e;
@@ -90,6 +114,11 @@ const StyledButton = styled.button`
     background: #f3e8ee;
     color: #bfaeae;
     cursor: not-allowed;
+  }
+  @media (max-width: 600px) {
+    font-size: 1.05rem;
+    padding: 1rem 0;
+    margin-bottom: 1rem;
   }
 `;
 
@@ -114,6 +143,16 @@ const TranscriptContainer = styled.div`
   min-width: 36rem;
   margin-left: auto;
   margin-right: auto;
+  box-sizing: border-box;
+  @media (max-width: 600px) {
+    width: 100vw;
+    max-width: 100vw;
+    min-width: 0;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0.7rem 0.2rem;
+    border-radius: 0.7rem;
+  }
 `;
 
 const TranscriptTextarea = styled.textarea`
@@ -128,6 +167,17 @@ const TranscriptTextarea = styled.textarea`
   background: #f9f9fa;
   box-sizing: border-box;
   line-height: 1.6;
+`;
+
+const ResponsiveMainContainer = styled.div`
+  min-height: 100vh;
+  width: 100vw;
+  background: #f9f9fa;
+  @media (max-width: 600px) {
+    padding-left: 0.1rem;
+    padding-right: 0.1rem;
+    overflow-x: hidden;
+  }
 `;
 
 export default function Home() {
@@ -286,8 +336,13 @@ export default function Home() {
     }
   };
 
+  if (typeof window !== 'undefined') {
+    document.documentElement.style.overflowX = 'hidden';
+    document.body.style.overflowX = 'hidden';
+  }
+
   return (
-    <MainContainer>
+    <ResponsiveMainContainer>
       <BackgroundContainer>
         <StyledTitle>Mother's Day Voice Agent</StyledTitle>
         <StyledSubtitle>Record your voice, clone it, answer a few questions. We'll write a poem, call your mom and deliver it in a natural conversation.</StyledSubtitle>
@@ -407,6 +462,6 @@ export default function Home() {
           )}
         </div>
       </BackgroundContainer>
-    </MainContainer>
+    </ResponsiveMainContainer>
   );
 }

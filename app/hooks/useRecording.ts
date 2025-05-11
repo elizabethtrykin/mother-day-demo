@@ -29,8 +29,21 @@ export const useRecording = (maxDuration: number = 10): UseRecordingReturn => {
       resetRecording();
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
+      let mimeType = '';
+      if (MediaRecorder.isTypeSupported('audio/webm')) {
+        mimeType = 'audio/webm';
+      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        mimeType = 'audio/mp4';
+      } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+        mimeType = 'audio/ogg';
+      } else {
+        setError('Recording is not supported on this device/browser.');
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
+      
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm'
+        mimeType
       });
       
       mediaRecorderRef.current = mediaRecorder;

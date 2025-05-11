@@ -9,6 +9,13 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  @media (max-width: 600px) {
+    width: 100vw;
+    max-width: 100vw;
+    min-width: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
 `;
 
 const Inner = styled.div`
@@ -28,6 +35,14 @@ const Inner = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   width: 100%;
+  @media (max-width: 600px) {
+    width: 100vw;
+    max-width: 100vw;
+    min-width: 0;
+    padding: 0.5rem 0.2rem;
+    border-radius: 1rem;
+    box-sizing: border-box;
+  }
 `;
 
 const IconButton = styled.button<{ color?: string }>`
