@@ -7,7 +7,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'All questions and name are required.' }, { status: 400 });
     }
 
-    const prompt = `Write a heartfelt, original poem for a mom based on the following answers from her child.\n\nChild's name: ${name}\n\nOne beautiful thing mom does: ${question1}\nFavourite memory: ${question2}\nFeeling most associated with mom: ${question3}\n\nPoem:`;
+    const prompt = `Write a heartfelt, original poem for a mom based on the following answers from her child.\n\nChild's name: ${name}\n\nOne beautiful thing mom does: ${question1}\nFavourite memory: ${question2}\nFeeling most associated with mom: ${question3}\n\nPoem:\nDo not use asterisks in the title or anywhere in the poem.`;
 
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
